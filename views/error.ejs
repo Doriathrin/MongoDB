@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="stylesheets/bootstrap.css">
+  <script src="javascripts/jquery-3.4.1.js"></script>
+  <script src="javascripts/bootstrap.js"></script>
+  <title>Document</title>
+  <style>
+    span{
+      display: block;
+    }
+    .ipt{
+      display: none;
+    }
+  </style>
+</head>
+  
+<body>
+  <form class="form-inline">
+    <div class="form-group">
+      <label class="sr-only" for="exampleInputName">搜索</label>
+      <input type="text" class="form-control" id="exampleInputName" placeholder="搜索">
+    </div>
+  </form>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>学号</th>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>时间</th>
+        <th>性别</th>
+        <th>班级</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+</body>
+<script>
+  function read() {
+    $.ajax({
+      url: "/users/read",
+      success: function (response) {
+        console.log(response.data);
+        var data = response.data;
+
+        $("tbody").html("");
+
+        for (var i = 0; i < data.length; i++) {
+          var tr = document.createElement("tr");
+          tr.innerHTML = `
+          <td>${data[i].id}</td>
+          <td>
+            <span>${data[i].name}</span>
+            <input type='text' class='ipt' cid='${data[i]._id}'>
+          </td>
+          <td>${data[i].age}</td>
+          <td>${data[i].data}</td>
+          <td>${data[i].sex}</td>
+          <td>${data[i].class}</td>
+          <td>
+            <button type="button" v='${data[i]._id}' class="btn del btn-primary">删除</button>
+            <button type="button" class="btn change btn-primary">修改</button>
+          </td>
+          `
+          $(".table tbody").append(tr);
+        }
+      },
+      error: function (error) {
+        console.log(error);
+      }
+    })
+  }
+  read();
+  // 删除数据
+  $("tbody").on("click",".del",function(){
+    var _id=$(this).attr("v");
+    $.ajax({
+      url:"/users/shang",
+      data:{
+        _id:_id
+      },
+      success:function(response){
+        console.log(response);
+        read();
+      },
+      error:function(error){
+        console.log(error);
+      }
+    })
+  })
+  // 修改数据
+  $("tbody").on("click",".change",function(){
+     $("tbody tr").eq($(this).parent().parent().index()).find(".ipt").show().siblings().hide();
+  }); 
+  $("tbody").on("blur",".ipt",function(){
+    // 获取文本框的数据
+    var ch=$(this).val();
+    $(this).hide().siblings().show();
+    $.ajax({
+      url:"/users/gai",
+      data:{
+        f:{
+          _id:$(this).attr("cid")
+        },
+        con:{
+          name:ch
+        }
+      },
+      success:function(response){
+        console.log(response);
+        if(response.code==0){
+          read();
+        }
+      },
+      error:function(error){
+        console.log(error);
+      }
+    })
+  })
+  // 搜索功能
+  $(".search").click(function(){
+    var name=$("#exampleInputName").val();
+    if($(this).val()==''){
+      read();
+    }
+     $.ajax({
+       url:"/users/find",
+       data:{
+         name:name
+       },
+       success:function(response){
+         console.log(response);
+         if(response.code==0){
+           var data = response.data;
+           $("tbody").html("");
+
+           for (var i = 0; i < data.length; i++) { 
+             var tr=document.createElement("tr"); 
+             tr.innerHTML=` <td>${data[i].id}
+             </td>
+             <td>
+               <span>${data[i].name}</span>
+               <input type='text' class='ipt' cid='${data[i]._id}'>
+             </td>
+             <td>${data[i].age}</td>
+             <td>${data[i].data}</td>
+             <td>${data[i].sex}</td>
+             <td>${data[i].class}</td>
+             <td>
+               <button type="button" v='${data[i]._id}' class="btn del btn-primary">删除</button>
+               <button type="button" class="btn change btn-primary">修改</button>
+             </td>
+             `
+             $(".table tbody").append(tr);
+             }
+         }
+       },
+       error:function(error){
+         console.log(error);
+       }
+     })
+    })
+       $("#exampleInputName").on("input",function(){
+         $.ajax({
+           url:"/users/key",
+           data:{
+             name:$(this).val()
+           },
+           success:function(response){
+             console.log(response);
+             if(response.code==0){
+                var data = response.data;
+                 console.log(data);
+
+                $("tbody").html("");
+                for (var i = 0; i < data.length; i++) { 
+                  var tr=document.createElement("tr"); 
+                  tr.innerHTML=` 
+                  <td>
+                  ${data[i].id}
+                  </td>
+                  <td>
+                    <span>${data[i].name}</span>
+                    <input type='text' class='ipt' cid='${data[i]._id}'>
+                  </td>
+                  <td>${data[i].age}</td>
+                  <td>${data[i].data}</td>
+                  <td>${data[i].sex}</td>
+                  <td>${data[i].class}</td>
+                  <td>
+                    <button type="button" v='${data[i]._id}' class="btn del btn-primary">删除</button>
+                    <button type="button" class="btn change btn-primary">修改</button>
+                  </td>
+                  `
+                  $(".table tbody").append(tr);
+                  }
+           }
+          }
+         })
+        if($(this).val()==''){
+           read();
+         }
+       })
+</script>
+
+</html>
